@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas width="600" height="400" id="Screen" style="border: 2px solid red"></canvas>
+    <script src="Engine.js"></script>
+    <script>
+        class MousePositionCheckText extends Component{
+            constructor(){
+                super("MousePositionCheckText");
+            }
+            Update(){
+                super.Update();
+                this.gameObject.FindComponent("TextRenderer").text = "Mouse Position: " + Input.GetMousePos().x + "," + Input.GetMousePos().y;
+            }
+        }
+        class MouseClickCheckText extends Component{
+            constructor(){
+                super("MouseClickCheckText");
+            }
+            Update(){
+                super.Update();
+                let textRenderer = this.gameObject.FindComponent("TextRenderer");
+                if(Input.GetMouseButtonDown()){
+                    textRenderer.text = "Mouse Button Down";
+                }
+                else if(Input.GetMouseButton()){
+                    textRenderer.text = "Mouse Button Pressed";
+                }
+                else if(Input.GetMouseButtonUp()){
+                    textRenderer.text = "Mouse Button Up";
+                }
+                else{
+                    textRenderer.text = "Mouse Button None";
+                }
+            }
+        }
+        class ButtonColorChanger extends Component{
+            constructor(idleColor, hoveredColor, clickedColor){
+                super("ButtonColorChanger");
+                this.idleColor = idleColor;
+                this.hoveredColor = hoveredColor;
+                this.clickedColor = clickedColor;
+            }
+            Update(){
+                let button = this.gameObject.FindComponent("Button");
+                let squareRenderer = this.gameObject.FindComponent("SquareRenderer");
+                if(button.hovered){
+                    if(button.clicked){
+                        squareRenderer.color = this.clickedColor;
+                    }
+                    else{
+                        squareRenderer.color = this.hoveredColor
+                    }
+                }
+                else{
+                    squareRenderer.color = this.idleColor;
+                }
+            }
+        }
+        let TextObj = new GameObject("TextObj");
+        TextObj.transform.position = new Vector2(canvas.width / 2.0, 50);
+        TextObj.AddComponent(new MousePositionCheckText());
+        TextObj.AddComponent(new TextRenderer("Mouse Position: ", "30px Arial", new Color(0, 0, 255), "center", false, 0, null));
+
+        let TextObj2 = new GameObject("TextObj2");
+        TextObj2.transform.position = new Vector2(canvas.width / 2.0, 100);
+        TextObj2.AddComponent(new MouseClickCheckText());
+        TextObj2.AddComponent(new TextRenderer("", "30px Arial", new Color(255, 0, 0), "center", false, 0, null));
+
+        let ButtonObj = new GameObject("ButtonObj");
+        ButtonObj.transform.position = new Vector2(canvas.width / 2.0, 300);
+        ButtonObj.AddComponent(new SquareRenderer(400, 100, new Color(150, 150, 150)));
+        ButtonObj.AddComponent(new TextRenderer("다이아 검 옮기기", "30px Arial", new Color(0, 0, 0), "center", false, 10, 400));
+        ButtonObj.AddComponent(new Button(400, 100));
+        ButtonObj.AddComponent(new ButtonColorChanger(new Color(150, 150, 150), new Color(100, 100, 100), new Color(50, 50, 50)));
+
+        let MoveObj = new GameObject("MoveObj");
+        MoveObj.transform.position = new Vector2(0, canvas.height / 2);
+        MoveObj.AddComponent(new ImageRenderer(100, 100, new RenderedImage("Assets/DiamondSword.png")));
+        let right = true;
+        ButtonObj.FindComponent("Button").onClick = () => {
+            if(right){
+                MoveObj.transform.Translate(new Vector2(50, 0));
+                if(MoveObj.transform.position.x >= canvas.width){
+                    right = false;
+                }
+            }
+            else{
+                MoveObj.transform.Translate(new Vector2(-50, 0));
+                if(MoveObj.transform.position.x <= 0){
+                    right = true;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

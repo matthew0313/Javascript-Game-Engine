@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas width="600" height="400" id="Screen" style="border: 2px solid red"></canvas>
+    <script src="Engine.js"></script>
+    <script>
+        class PlayerController extends Component{
+            constructor(moveSpeed){
+                super();
+                this.moveSpeed = moveSpeed;
+            }
+            Update(){
+                super.Update();
+                let move = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+                move = Vector2.Multiply(move, Time.deltaTime * this.moveSpeed);
+                this.transform.Translate(move);
+            }
+        }
+        class BoxObserverText extends Component{
+            constructor(observed){
+                super("BoxObserverText");
+                this.observed = observed;
+            }
+            Update(){
+                super.Update();
+                if(this.observed.touching.length > 0){
+                    this.gameObject.FindComponent("TextRenderer").text = "Touching " + this.observed.touching[this.observed.touching.length - 1].gameObject.name;
+                }
+                else{
+                    this.gameObject.FindComponent("TextRenderer").text = "Not Touching Anything";
+                }
+            }
+        }
+
+        let Player = new GameObject("Player");
+        Player.AddComponent(new PlayerController(300));
+        Player.AddComponent(new SquareRenderer(200, 200, new Color(255, 0, 0)));
+        Player.AddComponent(new TrailRenderer(25 * Math.sqrt(2), new Gradient(new Color(255, 0, 0), new Color(0, 0, 255)), 0.5, 1.0, 0.0)).gradient.AddColorPoint(0.5, new Color(0, 255, 0));
+        Player.AddComponent(new BoxCollider(200, 200));
+
+        let CenterObject = new GameObject("CenterObject");
+        CenterObject.transform.position = new Vector2(canvas.width / 2, canvas.height / 2);
+        CenterObject.AddComponent(new SquareRenderer(100, 100, new Color(255, 255, 0)));
+        CenterObject.AddComponent(new BoxCollider(100, 100));
+
+        let AboveText = new GameObject("AboveText");
+        AboveText.transform.position = new Vector2(0, 50);
+        AboveText.AddComponent(new TextRenderer("Not Touching", "30px Arial", new Color(0, 0, 0), "left", false, 0, null));
+        AboveText.AddComponent(new BoxObserverText(CenterObject.FindComponent("BoxCollider")));
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas width="600" height="400" id="Screen" style="border: 2px solid red"></canvas>
+    <script src="Engine.js"></script>
+    <script>
+        let money = 0;
+        class UpgradedSword extends Component{
+            constructor(){
+                super("UpgradedSword");
+                this.upgrades = [
+                    {src:"Assets/Upgrades/0.png", name:"흙검", desc:"흙으로 만든 검이다.", cost:0},
+                    {src:"Assets/Upgrades/1.png", name:"단단한 흙검", desc:"흙으로 만든 더 단단한 검이다.", cost:100},
+                    {src:"Assets/Upgrades/2.png", name:"나무 검", desc:"친환경적인 검이다.", cost:200},
+                    {src:"Assets/Upgrades/3.png", name:"돌 검", desc:"맞으면 이제 뒤질 것 같은 검이다.", cost:400},
+                    {src:"Assets/Upgrades/4.png", name:"철 검", desc:"철이 철철 넘처", cost:800},
+                    {src:"Assets/Upgrades/5.png", name:"금 검", desc:"이 세계관은 금이 철보다 강한 세계관이다.", cost:1600},
+                    {src:"Assets/Upgrades/6.png", name:"독 검", desc:"좀 뜬금없는 감이 있지만 멋지면 그만 아닌가.", cost:3200},
+                    {src:"Assets/Upgrades/7.png", name:"에메랄드 검", desc:"주민들이 좋아할 것 같은 검이다.", cost:6400},
+                    {src:"Assets/Upgrades/8.png", name:"다이아 검", desc:"Diamonds! We're rich!", cost:12800}
+                ];
+                console.log(this.upgrades);
+                this.currentTier = 0;
+            }
+            Set(imageRenderer, nameText, descText, costText, upgradeButton){
+                this.imageRenderer = imageRenderer;
+                this.nameText = nameText;
+                this.descText = descText;
+                this.costText = costText;
+                this.upgradeButton = upgradeButton;
+                this.imageRenderer.image = new RenderedImage(this.upgrades[0].src);
+                this.nameText.text = this.upgrades[0].name;
+                this.descText.text = this.upgrades[0].desc;
+                this.costText.text = "업그레이드 비용: " + this.upgrades[1].cost;
+                this.upgradeButton.onClick = () => this.Upgrade();
+            }
+            Upgrade(){
+                console.log(this);
+                if(this.currentTier >= this.upgrades.length - 1 || money < this.upgrades[this.currentTier + 1].cost) return;
+                money -= this.upgrades[this.currentTier + 1].cost;
+                this.currentTier++;
+                this.imageRenderer.image = new RenderedImage(this.upgrades[this.currentTier].src);
+                this.nameText.text = this.upgrades[this.currentTier].name;
+                this.descText.text = this.upgrades[this.currentTier].desc;
+                if(this.currentTier < this.upgrades.length - 1){
+                    this.costText.text = "업그레이드 비용: " + this.upgrades[this.currentTier + 1].cost;
+                    console.log("TEST");
+                }
+                else{
+                    this.upgradeButton.gameObject.active = false;
+                    console.log("TEST2");
+                }
+            }
+        }
+        class ButtonColorChanger extends Component{
+            constructor(idleColor, hoveredColor, clickedColor){
+                super("ButtonColorChanger");
+                this.idleColor = idleColor;
+                this.hoveredColor = hoveredColor;
+                this.clickedColor = clickedColor;
+            }
+            Update(){
+                super.Update();
+                let button = this.gameObject.FindComponent("Button");
+                let squareRenderer = this.gameObject.FindComponent("SquareRenderer");
+                if(button.hovered){
+                    if(button.clicked){
+                        squareRenderer.color = this.clickedColor;
+                    }
+                    else{
+                        squareRenderer.color = this.hoveredColor
+                    }
+                }
+                else{
+                    squareRenderer.color = this.idleColor;
+                }
+            }
+        }
+        class MoneyText extends Component{
+            constructor(){
+                super("MoneyText");
+            }
+            Update(){
+                super.Update();
+                this.gameObject.FindComponent("TextRenderer").text = "Money: " + money;
+            }
+        }
+        let upgradedSword = new GameObject("upgradedSword");
+        upgradedSword.AddComponent(new UpgradedSword());
+        upgradedSword.AddComponent(new ImageRenderer(250, 250, new RenderedImage("Assets/Upgrades/0.png")));
+        upgradedSword.transform.position = new Vector2(canvas.width / 2, 150);
+
+        let nameText = new GameObject("nameText");
+        nameText.AddComponent(new TextRenderer("nameText", "30px Arial", new Color(0, 0, 0), "center", false, 0, null));
+        nameText.transform.position = new Vector2(canvas.width / 2, 300);
+
+        let descText = new GameObject("descText");
+        descText.AddComponent(new TextRenderer("descText", "15px Arial", new Color(0, 0, 0), "center", false, 0, null));
+        descText.transform.position = new Vector2(canvas.width / 2, 320);
+
+        let costText = new GameObject("costText");
+        costText.AddComponent(new TextRenderer("costText", "15px Arial", new Color(0, 255, 0), "center", false, 0, null));
+        costText.transform.position = new Vector2(canvas.width / 2, 340);
+
+        let upgradeButton = new GameObject("upgradeButton");
+        upgradeButton.AddComponent(new Button(300, 50));
+        upgradeButton.AddComponent(new SquareRenderer(300, 50, new Color(100, 100, 100)));
+        upgradeButton.AddComponent(new TextRenderer("Upgrade", "20px Arial", new Color(0, 0, 0), "center", false, 0, 300));
+        upgradeButton.AddComponent(new ButtonColorChanger(new Color(100, 100, 100), new Color(50, 50, 50), new Color(25, 25, 25)));
+        upgradeButton.transform.position = new Vector2(canvas.width / 2, 375);
+
+        upgradedSword.FindComponent("UpgradedSword").Set(upgradedSword.FindComponent("ImageRenderer"), nameText.FindComponent("TextRenderer"), descText.FindComponent("TextRenderer"), costText.FindComponent("TextRenderer"), upgradeButton.FindComponent("Button"));
+
+        let moneyEarnButton = new GameObject("moneyEarnButton");
+        moneyEarnButton.AddComponent(new Button(100, 100)).onClick = () => money += 50;
+        moneyEarnButton.AddComponent(new SquareRenderer(100, 100, new Color(0, 255, 0)));
+        moneyEarnButton.AddComponent(new TextRenderer("Earn Money", "15px Arial", new Color(0, 0, 0), "center", true, 0, 100));
+        moneyEarnButton.AddComponent(new ButtonColorChanger(new Color(0, 255, 0), new Color(0, 200, 0), new Color(0, 150, 0)));
+        moneyEarnButton.transform.position = new Vector2(canvas.width / 2 + 200, 100);
+
+        let moneyText = new GameObject("moneyText");
+        moneyText.AddComponent(new TextRenderer("Money: 0", "15px Arial", new Color(0, 0, 0), "center", true, 0, 150));
+        moneyText.AddComponent(new MoneyText());
+        moneyText.transform.position = new Vector2(canvas.width / 2 + 200, 170);
+    </script>
+</body>
+</html>
